@@ -1,0 +1,18 @@
+[
+  {
+    "title": "Inference reliability runbook",
+    "text": "Inference requests use a bounded retry budget. Retry transient failures once with jitter, but never retry invalid inputs. Every request carries a trace ID so failures can be followed across the gateway and worker.\n\nA circuit breaker opens after three consecutive provider failures. During the cooldown, inference requests go to the fallback provider. One half-open probe checks recovery after the cooldown expires.\n\nLatency alerts use the p95 of the request window. Investigate queue depth and worker saturation before increasing retry counts. Unbounded retries can amplify an outage."
+  },
+  {
+    "title": "Dataset intake contract",
+    "text": "Incoming records require an ID, nonempty text, and an approved label. Invalid records go to quarantine with their original line number and validation reason. Accepted records and the batch receipt are written in one transaction.\n\nReplay protection hashes the original batch bytes. Replaying an identical batch returns the prior receipt without inserting additional records. Record IDs are unique inside a batch, not across all batches.\n\nLabel-distribution drift compares accepted records with the prior dataset. Jensen\u2013Shannon divergence above 0.15 flags the batch for review; it does not automatically reject the batch."
+  },
+  {
+    "title": "Model release checklist",
+    "text": "Before promoting a model, compare the candidate and baseline on the same labeled evaluation set. Review accuracy, macro F1, confusion counts, and individual regressions by slice.\n\nRoll back a model when the candidate causes a sustained regression in a critical slice or exceeds the latency budget. A positive aggregate score does not excuse a failure in the most important user workflow.\n\nPaired bootstrap intervals estimate uncertainty in the difference between two models. Keep the sample seed fixed for reproducible reviews. Small fixtures demonstrate the workflow but cannot support a production release decision."
+  },
+  {
+    "title": "Retrieval investigation notes",
+    "text": "Retrieval quality depends on the collection and query vocabulary. BM25 ranks passages by term frequency, inverse document frequency, and passage length. It is a lexical baseline and does not understand semantic similarity.\n\nEvery extracted answer should link to a source passage. When query coverage is weak, abstain from answering and show the retrieved evidence. Inspect unsupported terms before changing the ranker.\n\nChunk boundaries can hide context. Overlap adjacent long passages and keep paragraph references so reviewers can find the original source."
+  }
+]
